@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import { env } from "./config/env";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -12,6 +13,7 @@ app.use(express.json());
 app.get("/health", (_req, res) => {
     res.status(200).json({
         status: "ok",
+        environment: env.NODE_ENV,
         timestamp: new Date().toISOString(),
         uptime: process.uptime(),
     });
