@@ -7,7 +7,7 @@ export const envSchema = z.object({
         .enum(["development", "production", "test"])
         .default("development"),
     PORT: z.coerce.number().default(5000),
-    // DATABASE_URL: z.string().url("Must be a valid connection string"),
+    DATABASE_URL: z.string().url("Must be a valid connection string"),
     // GROQ_API_KEY: z.string().min(1, "Groq API key is required"),
 });
 
