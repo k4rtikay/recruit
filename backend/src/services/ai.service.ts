@@ -1,8 +1,9 @@
 import { Groq } from "groq-sdk";
 import { ResumeExtractionSchema } from "../schemas/ai.schema.js";
+import { env } from "../config/env.js";
 
 const groq = new Groq({
-    apiKey: process.env.GROQ_API_KEY,
+    apiKey: env.GROQ_API_KEY_RESUME_PARSER,
 });
 
 const SYSTEM_PROMPT = `
