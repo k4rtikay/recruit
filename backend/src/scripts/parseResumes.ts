@@ -1,6 +1,9 @@
 import { getDocumentProxy } from "unpdf";
 import path from "node:path";
 import fs from "node:fs/promises";
+import { extractResumeStructure } from "../services/ai.service.js";
+import { buildChunks } from "./buildChunks.js";
+import { validateExtraction } from "./validateExtraction.js";
 
 type PdfTextItem = {
     str?: string;
@@ -110,12 +113,35 @@ export async function parseResume(
     return mergeStrayCharacters(resumeLines);
 }
 
-export async function run(filePath = defaultResumePath): Promise<string> {
+export async function run(filePath = defaultResumePath) {
     const lines = await parseResume(filePath);
+    const numberedResume = lines
+        .map((line, index) => `${index + 1}. ${line}`)
+        .join("\n");
 
-    return lines.map((line, index) => `${index + 1}. ${line}`).join("\n");
+    const extraction = await extractResumeStructure(numberedResume);
+
+    if (!extraction) {
+        return null;
+    }
+
+    const validation = validateExtraction(lines, extraction);
+
+    if (!validation.valid) {
+        console.error("Resume extraction contains invalid line ranges:", {
+            checks: validation.checks,
+            errors: validation.errors,
+        });
+        return null;
+    }
+
+    return buildChunks(lines, extraction);
 }
 
 run()
-    .then((numberedResume) => console.log(numberedResume))
-    .catch((error) => console.error("Failed to parse resume:", error));
+    .then((chunkedResume) => {
+        if (chunkedResume) {
+            console.dir(chunkedResume, { depth: null });
+        }
+    })
+    .catch((error) => console.error("Failed to process resume:", error));
